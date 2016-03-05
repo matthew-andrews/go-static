@@ -48,17 +48,12 @@ func headerMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func serve() {
-	addr := fmt.Sprintf("%s:%d", hostAddress, port)
-	log.Printf("serving \"%s\" at http://%s\n", directory, addr)
-	log.Fatal(http.ListenAndServe(addr, headerMiddleware(http.FileServer(http.Dir(directory)))))
-}
-
 func main() {
 	app := cli.NewApp()
 	app.Name = CLI_NAME
 	app.Version = CLI_VERSION
 	app.Usage = "a simple port of the core functionality of github.com/cloudhead/node-static"
+
 	app.Flags = []cli.Flag{
 		cli.IntFlag{
 			Name:        "port, p",
@@ -79,10 +74,13 @@ func main() {
 			Destination: &cache,
 		},
 	}
+
 	app.Action = func(c *cli.Context) {
 		wd, _ := os.Getwd()
 		directory = path.Join(wd, c.Args().First())
-		serve()
+		addr := fmt.Sprintf("%s:%d", hostAddress, port)
+		log.Printf("serving \"%s\" at http://%s\n", directory, addr)
+		log.Fatal(http.ListenAndServe(addr, headerMiddleware(http.FileServer(http.Dir(directory)))))
 	}
 
 	app.Run(os.Args)
