@@ -1,0 +1,11 @@
+{
+	"ImportPath": "bitbucket.org/matthewandrews/server",
+	"GoVersion": "go1.6",
+	"Deps": [
+		{
+			"ImportPath": "github.com/codegangsta/cli",
+			"Comment": "1.2.0-219-ga294348",
+			"Rev": "a2943485b110df8842045ae0600047f88a3a56a1"
+		}
+	]
+}
