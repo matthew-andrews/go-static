@@ -18,11 +18,32 @@ var hostAddress string
 var cache int
 var directory string
 
+type StaticResponseWriter struct {
+	ResponseWriter http.ResponseWriter
+	Path           string
+}
+
+func (w StaticResponseWriter) Header() http.Header {
+	return w.ResponseWriter.Header()
+}
+
+func (w StaticResponseWriter) Write(b []byte) (int, error) {
+	return w.ResponseWriter.Write(b)
+}
+
+func (w StaticResponseWriter) WriteHeader(status int) {
+	w.ResponseWriter.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d", cache))
+	w.ResponseWriter.Header().Set("Server", fmt.Sprintf("%s/%s", CLI_NAME, CLI_VERSION))
+	log.Printf("[%d]: %s", status, w.Path)
+	w.ResponseWriter.WriteHeader(status)
+}
+
 func headerMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d", cache))
-		w.Header().Set("Server", fmt.Sprintf("%s/%s", CLI_NAME, CLI_VERSION))
-		log.Printf("[xxx]: %s", r.URL.Path)
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		w := StaticResponseWriter{
+			ResponseWriter: rw,
+			Path:           r.URL.Path,
+		}
 		next.ServeHTTP(w, r)
 	})
 }
