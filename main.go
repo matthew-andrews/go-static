@@ -1,3 +1,4 @@
+// A simple port of the core functionality of node-static as a learning exercise
 package main
 
 import (
@@ -36,7 +37,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = CLI_NAME
 	app.Version = CLI_VERSION
-	app.Usage = "simple, rfc 2616 compliant file streaming module for go"
+	app.Usage = "a simple port of the core functionality of github.com/cloudhead/node-static"
 	app.Flags = []cli.Flag{
 		cli.IntFlag{
 			Name:        "port, p",
