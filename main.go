@@ -11,12 +11,11 @@ import (
 	"path"
 )
 
-var headers map[string]string
-
 // Define a ‘StaticResponseWriter’ in order do some manipulation and logging
 // of the response immediately before the header is flushed in ‘WriteHeader’
 // otherwise, this is just straight up inheritance
 type StaticResponseWriter struct {
+	Headers        map[string]string
 	ResponseWriter http.ResponseWriter
 	Path           string
 }
@@ -30,7 +29,7 @@ func (w StaticResponseWriter) Write(b []byte) (int, error) {
 }
 
 func (w StaticResponseWriter) WriteHeader(status int) {
-	for header, value := range headers {
+	for header, value := range w.Headers {
 		w.ResponseWriter.Header().Set(header, value)
 	}
 	log.Printf("[%d]: %s", status, w.Path)
@@ -67,7 +66,7 @@ func main() {
 	}
 
 	app.Action = func(c *cli.Context) {
-		headers = make(map[string]string)
+		headers := make(map[string]string)
 		headers["Server"] = fmt.Sprintf("%s/%s", app.Name, app.Version)
 		headers["Cache-Control"] = fmt.Sprintf("max-age=%d", c.GlobalInt("cache"))
 		err := json.Unmarshal([]byte(c.GlobalString("headers")), &headers)
@@ -81,6 +80,7 @@ func main() {
 		fileServer := http.FileServer(http.Dir(directory))
 		log.Fatal(http.ListenAndServe(addr, http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			w := StaticResponseWriter{
+				Headers:        headers,
 				ResponseWriter: rw,
 				Path:           r.URL.Path,
 			}
