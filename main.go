@@ -18,7 +18,6 @@ var port int
 var hostAddress string
 var cache int
 var directory string
-var headerJson string
 var headers map[string]string
 
 // Define a ‘StaticResponseWriter’ in order do some manipulation and logging
@@ -73,15 +72,15 @@ func main() {
 			Destination: &cache,
 		},
 		cli.StringFlag{
-			Name:        "headers, H",
-			Usage:       "additional headers (in JSON format)",
-			Value:       "{}",
-			Destination: &headerJson,
+			Name:  "headers, H",
+			Usage: "additional headers (in JSON format)",
+			Value: "{}",
 		},
 	}
 
 	app.Action = func(c *cli.Context) {
 		headers = make(map[string]string)
+		headerJson := c.GlobalString("headers")
 		err := json.Unmarshal([]byte(headerJson), &headers)
 		if err != nil {
 			log.Fatalf("Invalid JSON string '%s'", headerJson)
