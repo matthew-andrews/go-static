@@ -1,6 +1,6 @@
 # go-static
 
-A simple go port of the core functionality of the extremely useful [node-static](https://github.com/cloudhead/node-static) command line tool.
+A simple go port of the core functionality of the extremely useful [node-static](https://github.com/cloudhead/node-static) command line tool.  Just a little exercise to learn a bit more Go.
 
 ## Example usage
 
