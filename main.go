@@ -72,10 +72,9 @@ func main() {
 		headers = make(map[string]string)
 		headers["Server"] = fmt.Sprintf("%s/%s", CLI_NAME, CLI_VERSION)
 		headers["Cache-Control"] = fmt.Sprintf("max-age=%d", c.GlobalInt("cache"))
-		headerJson := c.GlobalString("headers")
-		err := json.Unmarshal([]byte(headerJson), &headers)
+		err := json.Unmarshal([]byte(c.GlobalString("headers")), &headers)
 		if err != nil {
-			log.Fatalf("Invalid JSON string '%s'", headerJson)
+			log.Fatal("Headers option is invalid JSON")
 		}
 
 		wd, _ := os.Getwd()
