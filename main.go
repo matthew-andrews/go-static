@@ -69,10 +69,7 @@ func main() {
 		headers = make(map[string]string)
 		headers["Server"] = fmt.Sprintf("%s/%s", app.Name, app.Version)
 		headers["Cache-Control"] = fmt.Sprintf("max-age=%d", c.GlobalInt("cache"))
-		err := json.Unmarshal([]byte(c.GlobalString("headers")), &headers)
-		if err != nil {
-			log.Fatal("Headers option is invalid JSON")
-		}
+		log.Fatal(json.Unmarshal([]byte(c.GlobalString("headers")), &headers))
 
 		wd, _ := os.Getwd()
 		directory := path.Join(wd, c.Args().First())
