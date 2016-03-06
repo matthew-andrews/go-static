@@ -11,9 +11,6 @@ import (
 	"path"
 )
 
-const CLI_NAME = "go-static"
-const CLI_VERSION = "1.0.0"
-
 var headers map[string]string
 
 // Define a ‘StaticResponseWriter’ in order do some manipulation and logging
@@ -41,8 +38,8 @@ func (w StaticResponseWriter) WriteHeader(status int) {
 
 func main() {
 	app := cli.NewApp()
-	app.Name = CLI_NAME
-	app.Version = CLI_VERSION
+	app.Name = "go-static"
+	app.Version = "1.0.0"
 	app.Usage = "a simple port of the core functionality of github.com/cloudhead/node-static"
 
 	app.Flags = []cli.Flag{
@@ -70,7 +67,7 @@ func main() {
 
 	app.Action = func(c *cli.Context) {
 		headers = make(map[string]string)
-		headers["Server"] = fmt.Sprintf("%s/%s", CLI_NAME, CLI_VERSION)
+		headers["Server"] = fmt.Sprintf("%s/%s", app.Name, app.Version)
 		headers["Cache-Control"] = fmt.Sprintf("max-age=%d", c.GlobalInt("cache"))
 		err := json.Unmarshal([]byte(c.GlobalString("headers")), &headers)
 		if err != nil {
