@@ -2,6 +2,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/codegangsta/cli"
 	"log"
@@ -17,6 +18,8 @@ var port int
 var hostAddress string
 var cache int
 var directory string
+var headerJson string
+var headers map[string]string
 
 type StaticResponseWriter struct {
 	ResponseWriter http.ResponseWriter
@@ -34,6 +37,10 @@ func (w StaticResponseWriter) Write(b []byte) (int, error) {
 func (w StaticResponseWriter) WriteHeader(status int) {
 	w.ResponseWriter.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d", cache))
 	w.ResponseWriter.Header().Set("Server", fmt.Sprintf("%s/%s", CLI_NAME, CLI_VERSION))
+	for header, value := range headers {
+		w.ResponseWriter.Header().Set(header, value)
+	}
+
 	log.Printf("[%d]: %s", status, w.Path)
 	w.ResponseWriter.WriteHeader(status)
 }
@@ -63,9 +70,21 @@ func main() {
 			Value:       3600,
 			Destination: &cache,
 		},
+		cli.StringFlag{
+			Name:        "headers, H",
+			Usage:       "additional headers (in JSON format)",
+			Value:       "{}",
+			Destination: &headerJson,
+		},
 	}
 
 	app.Action = func(c *cli.Context) {
+		headers = make(map[string]string)
+		err := json.Unmarshal([]byte(headerJson), &headers)
+		if err != nil {
+			log.Fatalf("Invalid JSON string '%s'", headerJson)
+		}
+
 		wd, _ := os.Getwd()
 		directory = path.Join(wd, c.Args().First())
 		addr := fmt.Sprintf("%s:%d", hostAddress, port)
