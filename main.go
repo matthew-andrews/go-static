@@ -38,16 +38,6 @@ func (w StaticResponseWriter) WriteHeader(status int) {
 	w.ResponseWriter.WriteHeader(status)
 }
 
-func headerMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		w := StaticResponseWriter{
-			ResponseWriter: rw,
-			Path:           r.URL.Path,
-		}
-		next.ServeHTTP(w, r)
-	})
-}
-
 func main() {
 	app := cli.NewApp()
 	app.Name = CLI_NAME
@@ -80,7 +70,14 @@ func main() {
 		directory = path.Join(wd, c.Args().First())
 		addr := fmt.Sprintf("%s:%d", hostAddress, port)
 		log.Printf("serving \"%s\" at http://%s\n", directory, addr)
-		log.Fatal(http.ListenAndServe(addr, headerMiddleware(http.FileServer(http.Dir(directory)))))
+		fileServer := http.FileServer(http.Dir(directory))
+		log.Fatal(http.ListenAndServe(addr, http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+			w := StaticResponseWriter{
+				ResponseWriter: rw,
+				Path:           r.URL.Path,
+			}
+			fileServer.ServeHTTP(w, r)
+		})))
 	}
 
 	app.Run(os.Args)
