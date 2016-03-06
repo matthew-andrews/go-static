@@ -15,6 +15,7 @@ var headers map[string]string
 
 // Define a ‘StaticResponseWriter’ in order do some manipulation and logging
 // of the response immediately before the header is flushed in ‘WriteHeader’
+// otherwise, this is just straight up inheritance
 type StaticResponseWriter struct {
 	ResponseWriter http.ResponseWriter
 	Path           string
