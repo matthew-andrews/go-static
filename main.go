@@ -47,7 +47,7 @@ func main() {
 		headers["Cache-Control"] = fmt.Sprintf("max-age=%d", c.GlobalInt("cache"))
 		err := json.Unmarshal([]byte(c.GlobalString("headers")), &headers)
 		if err != nil {
-			log.Fatal("Headers is invalid JSON")
+			log.Fatal("--headers, -H is invalid JSON")
 		}
 		wd, _ := os.Getwd()
 		directory := path.Join(wd, c.Args().First())
