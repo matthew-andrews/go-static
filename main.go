@@ -14,10 +14,6 @@ import (
 const CLI_NAME = "go-static"
 const CLI_VERSION = "1.0.0"
 
-var port int
-var hostAddress string
-var cache int
-var directory string
 var headers map[string]string
 
 // Define a ‘StaticResponseWriter’ in order do some manipulation and logging
@@ -36,12 +32,9 @@ func (w StaticResponseWriter) Write(b []byte) (int, error) {
 }
 
 func (w StaticResponseWriter) WriteHeader(status int) {
-	w.ResponseWriter.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d", cache))
-	w.ResponseWriter.Header().Set("Server", fmt.Sprintf("%s/%s", CLI_NAME, CLI_VERSION))
 	for header, value := range headers {
 		w.ResponseWriter.Header().Set(header, value)
 	}
-
 	log.Printf("[%d]: %s", status, w.Path)
 	w.ResponseWriter.WriteHeader(status)
 }
@@ -54,22 +47,19 @@ func main() {
 
 	app.Flags = []cli.Flag{
 		cli.IntFlag{
-			Name:        "port, p",
-			Usage:       "TCP port at which the files will be served",
-			Value:       8080,
-			Destination: &port,
+			Name:  "port, p",
+			Usage: "TCP port at which the files will be served",
+			Value: 8080,
 		},
 		cli.StringFlag{
-			Name:        "host-address, a",
-			Usage:       "the local network interface at which to listen",
-			Value:       "127.0.0.1",
-			Destination: &hostAddress,
+			Name:  "host-address, a",
+			Usage: "the local network interface at which to listen",
+			Value: "127.0.0.1",
 		},
 		cli.IntFlag{
-			Name:        "cache, c",
-			Usage:       "\"Cache-Control\" max-age header setting",
-			Value:       3600,
-			Destination: &cache,
+			Name:  "cache, c",
+			Usage: "\"Cache-Control\" max-age header setting",
+			Value: 3600,
 		},
 		cli.StringFlag{
 			Name:  "headers, H",
@@ -80,6 +70,8 @@ func main() {
 
 	app.Action = func(c *cli.Context) {
 		headers = make(map[string]string)
+		headers["Server"] = fmt.Sprintf("%s/%s", CLI_NAME, CLI_VERSION)
+		headers["Cache-Control"] = fmt.Sprintf("max-age=%d", c.GlobalInt("cache"))
 		headerJson := c.GlobalString("headers")
 		err := json.Unmarshal([]byte(headerJson), &headers)
 		if err != nil {
@@ -87,8 +79,8 @@ func main() {
 		}
 
 		wd, _ := os.Getwd()
-		directory = path.Join(wd, c.Args().First())
-		addr := fmt.Sprintf("%s:%d", hostAddress, port)
+		directory := path.Join(wd, c.Args().First())
+		addr := fmt.Sprintf("%s:%d", c.GlobalString("host-address"), c.GlobalInt("port"))
 		log.Printf("serving \"%s\" at http://%s\n", directory, addr)
 		fileServer := http.FileServer(http.Dir(directory))
 		log.Fatal(http.ListenAndServe(addr, http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
