@@ -2,6 +2,7 @@
 package main
 
 import (
+	"bitbucket.org/matthewandrews/go-static/staticresponsewriter"
 	"encoding/json"
 	"fmt"
 	"github.com/codegangsta/cli"
@@ -10,31 +11,6 @@ import (
 	"os"
 	"path"
 )
-
-// Define a ‘StaticResponseWriter’ in order do some manipulation and logging
-// of the response immediately before the header is flushed in ‘WriteHeader’
-// otherwise, this is just straight up inheritance
-type StaticResponseWriter struct {
-	Headers        map[string]string
-	ResponseWriter http.ResponseWriter
-	Path           string
-}
-
-func (w StaticResponseWriter) Header() http.Header {
-	return w.ResponseWriter.Header()
-}
-
-func (w StaticResponseWriter) Write(b []byte) (int, error) {
-	return w.ResponseWriter.Write(b)
-}
-
-func (w StaticResponseWriter) WriteHeader(status int) {
-	for header, value := range w.Headers {
-		w.ResponseWriter.Header().Set(header, value)
-	}
-	log.Printf("[%d]: %s", status, w.Path)
-	w.ResponseWriter.WriteHeader(status)
-}
 
 func main() {
 	app := cli.NewApp()
@@ -79,7 +55,7 @@ func main() {
 		log.Printf("serving \"%s\" at http://%s\n", directory, addr)
 		fileServer := http.FileServer(http.Dir(directory))
 		log.Fatal(http.ListenAndServe(addr, http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-			w := StaticResponseWriter{
+			w := staticresponsewriter.StaticResponseWriter{
 				Headers:        headers,
 				ResponseWriter: rw,
 				Path:           r.URL.Path,
