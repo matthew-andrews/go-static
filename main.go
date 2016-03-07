@@ -2,10 +2,10 @@
 package main
 
 import (
-	"bitbucket.org/matthewandrews/go-static/staticresponsewriter"
 	"encoding/json"
 	"fmt"
 	"github.com/codegangsta/cli"
+	"github.com/matthew-andrews/go-static/staticresponsewriter"
 	"log"
 	"net/http"
 	"os"
